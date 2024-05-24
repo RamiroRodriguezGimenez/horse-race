@@ -2,6 +2,9 @@ package horse;
 
 import java.util.Random;
 
+
+import static utils.Constants.*;
+
 public class Horse implements Runnable{
 
     private final String name;
@@ -19,10 +22,17 @@ public class Horse implements Runnable{
 
     @Override
     public void run() {
-
+        try{
+            System.out.println("hola");
+            do {
+                advance();
+                waitStage();
+            } while(totalAdvancedDistance <= 1000);
+        }catch (Exception e){
+        }
     }
     private void advance() {
-        int stepAdvancedDistance = (random.nextInt(10) + 1) * speed;
+        int stepAdvancedDistance = (random.nextInt(ADVANCE_SEGMENT) + 1) * speed;
         synchronized (this) {
             totalAdvancedDistance = totalAdvancedDistance + stepAdvancedDistance;
         }
@@ -30,7 +40,7 @@ public class Horse implements Runnable{
     }
 
     private void waitStage() throws InterruptedException {
-        int waitTime = Math.max(0,(random.nextInt(5) +1) - stamina);
+        int waitTime = Math.max(0,(random.nextInt(WAIT_SEGMENT) +1) - stamina);
         Thread.sleep(waitTime * 1000);
     }
 
