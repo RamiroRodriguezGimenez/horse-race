@@ -1,40 +1,45 @@
 import horse.Horse;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
+import java.util.*;
+import java.util.concurrent.Semaphore;
 
 public class Main {
     private static final Random random = new Random();
+    private static final Semaphore semaphore = new Semaphore(3);
+    private static final int horseNumber = 10;
     public static void main(String[] args) throws InterruptedException {
 
-        List<Horse> horses = horseGenerator(5);
+        List<Horse> horses = horseGenerator(horseNumber);
 
         int availableProcessors = Runtime.getRuntime().availableProcessors();
-        ExecutorService executor;
-        if (10 > availableProcessors) {
+        /*ExecutorService executor;
+        if (horseNumber > availableProcessors) {
             executor = Executors.newVirtualThreadPerTaskExecutor();
         } else {
             executor = Executors.newFixedThreadPool(10);
-        }
-        //Thread thread = new Thread(horses.get(0));
-        //thread.run();
+        }*/
+
         List<Thread> threads= new ArrayList<>();
-        for (Horse horse: horses) {
-            Thread thread = Thread.ofVirtual().unstarted(horse);
-            threads.add(thread);
+        if (horseNumber > availableProcessors) {
+            for (Horse horse: horses) {
+                Thread thread = Thread.ofVirtual().unstarted(horse);
+                threads.add(thread);
+            }
+        } else {
+            for (Horse horse: horses) {
+                Thread thread = new Thread(horse);
+                threads.add(thread);
+            }
         }
+
         for (Thread thread: threads){
             thread.start();
         }
         for (Thread thread: threads){
             thread.join();
         }
+        reportResults(horses);
 
-        executor.shutdown();
     }
 
 
@@ -44,8 +49,20 @@ public class Main {
             String name = "Caballo " + (i + 1);
             int speed = random.nextInt(3) + 1;
             int stamina = random.nextInt(3) + 1;
-            horses.add(new Horse(name, speed, stamina));
+            horses.add(new Horse(name, speed, stamina, semaphore));
         }
         return horses;
+    }
+    private static void reportResults(List<Horse> horses) {
+        Map<Integer, String> results = new HashMap<>();
+
+        for (Horse horse : horses) {
+            results.put(horse.getPosition(), horse.getName());
+        }
+
+        System.out.println("*******Resultados de la carrera******");
+        for (int i = 1; i <= 3; i++) {
+            System.out.println("Posición " + (i) + ": " + results.get(i) );
+        }
     }
 }
