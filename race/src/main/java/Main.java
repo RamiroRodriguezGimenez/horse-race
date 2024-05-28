@@ -1,4 +1,5 @@
 import horse.Horse;
+import race.Sprinter;
 
 import java.util.*;
 import java.util.concurrent.Semaphore;
@@ -6,10 +7,19 @@ import java.util.concurrent.Semaphore;
 public class Main {
     private static final Random random = new Random();
     private static final Semaphore semaphore = new Semaphore(3);
-    private static final int horseNumber = 10;
+    private static  Sprinter sprinter;
+    private static final int horseNumber = 5;
     public static void main(String[] args) throws InterruptedException {
 
-        List<Horse> horses = horseGenerator(horseNumber);
+        sprinter = new Sprinter();
+        Thread sprinterThread = new Thread(sprinter);
+        sprinterThread.setDaemon(true);
+       /** no es necesario que finalice para que termine la ejecucion de la carrera.
+        Esperar que termine podria hacer al usuari esperar hasta 15 segundos innecesarios.*/
+
+        sprinterThread.start();
+
+        List<Horse> horses = horseGenerator(horseNumber, sprinter);
 
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         /*ExecutorService executor;
@@ -20,7 +30,7 @@ public class Main {
         }*/
 
         List<Thread> threads= new ArrayList<>();
-        if (horseNumber > availableProcessors) {
+        if (horseNumber > availableProcessors-1) {
             for (Horse horse: horses) {
                 Thread thread = Thread.ofVirtual().unstarted(horse);
                 threads.add(thread);
@@ -43,13 +53,13 @@ public class Main {
     }
 
 
-    public static List<Horse> horseGenerator(int horseNumber) {
+    public static List<Horse> horseGenerator(int horseNumber, Sprinter sprinter) {
         List<Horse> horses = new ArrayList<>();
         for (int i = 0; i < horseNumber; i++) {
             String name = "Caballo " + (i + 1);
             int speed = random.nextInt(3) + 1;
             int stamina = random.nextInt(3) + 1;
-            horses.add(new Horse(name, speed, stamina, semaphore));
+            horses.add(new Horse(name, speed, stamina, semaphore, sprinter));
         }
         return horses;
     }

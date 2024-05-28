@@ -1,5 +1,7 @@
 package horse;
 
+import race.Sprinter;
+
 import java.util.Random;
 import java.util.concurrent.Semaphore;
 
@@ -11,22 +13,23 @@ public class Horse implements Runnable{
     private final String name;
     private final int speed;
     private final int stamina;
-    private int totalAdvancedDistance;
-    private static final int RACE_LENGTH = 100;
+    private volatile int totalAdvancedDistance;
     private final Semaphore semaphore;
+    private final Sprinter sprinter;
     private  int position = 0;
-    private static int currentPosition = 1;
+    private volatile static int currentPosition = 1;
     //currentPosition es static, por lo tanto la comparten todas las innstancias de Horse,
     //position es una por cada instancia
     private static final Random random = new Random();
 
 
-    public Horse (String name, int speed, int stamina, Semaphore semaphore){
-        this.name=name;
-        this.speed=speed;
+    public Horse (String name, int speed, int stamina, Semaphore semaphore, Sprinter sprinter){
+        this.name = name;
+        this.speed = speed;
         this.stamina = stamina;
         this.semaphore = semaphore;
         totalAdvancedDistance = 0;
+        this.sprinter = sprinter;
     }
 
     @Override
@@ -34,8 +37,10 @@ public class Horse implements Runnable{
         try{
             while (currentPosition<=3) {
                 advance();
+                sprinter.trySprinter(this);
                 if (totalAdvancedDistance >= RACE_LENGTH) {
                     if (semaphore.tryAcquire()) {
+                        /**se bloquea Horse para evitar consumo de currentPosition de mas de un thread*/
                         synchronized (Horse.class) {
                             System.out.println(name + " ha terminado la carrera en la posición: " + currentPosition);
                             position=currentPosition;
@@ -66,6 +71,9 @@ public class Horse implements Runnable{
 
     public int getTotalAdvancedDistance(){
         return totalAdvancedDistance;
+    }
+    public void setTotalAdvancedDistance(int totalAdvancedDistance){
+        this.totalAdvancedDistance = totalAdvancedDistance;
     }
 
     public String getName(){
