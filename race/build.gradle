@@ -17,3 +17,12 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+task createJar(type: Jar) {
+    archiveBaseName.set('horse-race')
+    archiveVersion.set(version)
+    from sourceSets.main.output
+    manifest {
+        attributes 'Main-Class': 'main.java.Main'
+    }
+}
