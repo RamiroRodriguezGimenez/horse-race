@@ -23,6 +23,6 @@ task createJar(type: Jar) {
     archiveVersion.set(version)
     from sourceSets.main.output
     manifest {
-        attributes 'Main-Class': 'main.java.Main'
+        attributes 'Main-Class': 'src.main.java.Main'
     }
 }
