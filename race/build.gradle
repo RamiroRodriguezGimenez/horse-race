@@ -18,11 +18,19 @@ test {
     useJUnitPlatform()
 }
 
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'Main'
+        )
+    }
+}
+
 task createJar(type: Jar) {
     archiveBaseName.set('horse-race')
     archiveVersion.set(version)
     from sourceSets.main.output
     manifest {
-        attributes 'Main-Class': 'src.main.java.Main'
+        attributes 'Main-Class': 'java.Main'
     }
 }
